@@ -143,7 +143,6 @@ class Entity:
 
 
     
-
 # Clase BlackHole. Hereda de Entity    
 class BlackHole(Entity):
 
@@ -374,6 +373,8 @@ class Battery(Entity):
 def game():
     # Se instancia el tablero
     board = Space()
+    # Se instancian los modulos
+    power = Powerplant()
     # Se instancian las naves
     shipA = Ship()
     shipB = Ship()
