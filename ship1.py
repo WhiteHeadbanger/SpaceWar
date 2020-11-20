@@ -30,12 +30,12 @@ def choose_movement(current_pos: tuple):
 def main(ship):
     ship.add_name("Ship A")
     try:
-        ship_scan = ship.scanner()
+        ship_scan = ship.scan_ships()
     except OutOfEnergy:
         ship.charge_energy()
 
     for scan in ship_scan:
-        if scan.get_type() == "Ship" and scan.get_name() != ship.get_name():
+        if scan.get_name() != ship.get_name():
             target_ship_pos_x, target_ship_pos_y = ship.get_target_pos(scan)
             target = scan
 

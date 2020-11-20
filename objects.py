@@ -197,8 +197,8 @@ class Ship(Entity):
 
     shipColor = ('🟪', '🟨', '🟧', '🟦', '🟩', '🟫')
 
-    def __init__(self):
-        super().__init__(powerplant, shield, fuel_tank, battery)
+    def __init__(self, powerplant, shield, fuel_tank, battery):
+        super().__init__()
         self.__color__ = random.choice(Ship.shipColor)
         self.__energy__ = 50
         self.__type__ = "Ship"
@@ -374,10 +374,17 @@ def game():
     # Se instancia el tablero
     board = Space()
     # Se instancian los modulos
-    power = Powerplant()
+    power_shipA = Powerplant()
+    shield_shipA = Shield()
+    fueltank_shipA = Fueltank()
+    battery_shipA = Battery()
+    power_shipB = Powerplant()
+    shield_shipB = Shield()
+    fueltank_shipB = Fueltank()
+    battery_shipB = Battery() 
     # Se instancian las naves
-    shipA = Ship()
-    shipB = Ship()
+    shipA = Ship(power_shipA, shield_shipA, fueltank_shipA, battery_shipA)
+    shipB = Ship(power_shipB, shield_shipB, fueltank_shipB, battery_shipB)
     # Se instancian los agujeros negros del tablero
     blackHole = BlackHole()
     blackHole2 = BlackHole()

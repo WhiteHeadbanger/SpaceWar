@@ -38,7 +38,7 @@ def main(ship):
     time.sleep(1)
     """
     try:
-       ship_scan = ship.scanner()
+       ship_scan = ship.scan_all()
     except OutOfEnergy:
         ship.charge_energy()
     time.sleep(1)
