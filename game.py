@@ -2,103 +2,10 @@ import random
 import pygame as pg
 import os, time
 from error_handling import OutOfEnergy, OutOfLimitsScan, OutOfFuel, MovementRangeExceeded, NoModuleActive
-import utility
 import sw_classes
 import color
 import config
-
-
-
-class Space:
-    """
-    Space is a class declaration for the board itself.
-
-    """
-
-    # Variable de clase, en stack se agregan todas las acciones de las naves
-    stack = [] 
-
-    # Inicialización de la clase
-    def __init__(self):
-        # space_color determina el color del tablero
-        self.__space_color__ = "⬜"
-        # space determina como se va a ordenar el tablero. Llama al metodo initialize() cuando se instancia la clase.
-        self.__space__ = self.initialize()
-
-    def initialize(self):
-        return [[self.__space_color__ for sector in range(16)] for sector in range(16)]
-
-    # El metodo spawn_objects recibe por argumento una lista de instancias (args es una lista) y luego las ubica en el tablero. 
-    # Cambia el color del tablero (space_color) al color del objeto.
-    def spawn_objects(self, *args):
-        for arg in args:
-            posx, posy = arg.__Pos__
-            self.__space__[posy][posx] = arg.__color__
-
-    # Printea el tablero
-    def create_space(self):
-        for x in range(len(self.__space__)):
-            for y in range(len(self.__space__[x])):
-                print(self.__space__[x][y], end="")
-            print()
-        print("\n")
-
-    # check_stack recibe por argumento una lista de instancias que sean objetos estaticos (como agujeros negros).
-    # luego llama al metodo order_stack que recibe por argumento el stack de acciones y las ordena 
-    def check_stack(self, *args):
-        #stack_ordered es una lista de tuplas, ej: [("move", (1, 2), self), ("move", (4, 3), self)]
-        stack_ordered = self.order_stack(Space.stack)
-        self.update(stack_ordered, args) 
-
-    def order_stack(self, stack):
-        stack_aux = utility.utility(stack)
-        return stack_aux
-
-    # Metodo de clase. Los metodos de clase solo pueden acceder a variables de clase. Las variables de clase se denotan con "cls" (en contraposición con "self", que es una variable de instancia)
-    # el metodo delete_stack limpia el stack de acciones una vez fueron ejecutadas.
-    @classmethod
-    def delete_stack(cls):
-        cls.stack.clear()
-
-    def fill_board_color(self, x, y, *obj):
-        if obj: 
-            self.__space__[y][x] = obj[0].__color__ 
-        else: 
-            self.__space__[y][x] = self.__space_color__
-    
-    # metodo para actualizar el tablero con nuevas posiciones, nuevos colores, etc
-    def update(self, instruction_stack: list, *args):
-        # args = blackholes, suns, etc
-        other_objects = []
-        for arg in args:
-            for a in arg:
-                other_objects.append(a.__Pos__)
-
-        if not instruction_stack:
-            return
-        for st in instruction_stack:
-            if st[0] == "move":
-                from_posx, from_posy = st[2].get_current_pos()
-                to_posx, to_posy = st[1]
-                for x in range(len(self.__space__)):
-                    for y in range(len(self.__space__[x])):
-                        if to_posx == x and to_posy == y:
-                            self.fill_board_color(x, y, st[2])
-                            st[2].__Pos__ = (x, y) #store new ship positions
-                            # Si la nueva posición de la nave es igual a la posición de un blackhole..
-                            if st[2].__Pos__ in other_objects:
-                                # La vida de la nave cambia a 0 y se destruye.
-                                st[2].__hp__ = 0
-                        if from_posx == x and from_posy == y:
-                            self.fill_board_color(x, y)
-            elif st[0] == "attack":
-                st[1].__hp__ -= st[2].__damage__
-
-            # Print el nuevo tablero
-            self.create_space()
-            
-        for i in range(len(instruction_stack)):
-            print("Ship position {}: {} - Energy left: {} - HP left: {}".format(instruction_stack[i][2].__color__, instruction_stack[i][2].get_current_pos(), instruction_stack[i][2].__energy__, instruction_stack[i][2].__hp__))
+import shipA, shipB
         
 """
 class Ship(Entity):
@@ -142,6 +49,8 @@ class Ship(Entity):
     
 """
 
+
+
 def game():
 
     pg.init()
@@ -157,15 +66,29 @@ def game():
     battery_shipB = sw_classes.Battery()
     ship1 = sw_classes.Ship(color.RED, power_shipA, shield_shipA, fueltank_shipA, battery_shipA)
     ship2 = sw_classes.Ship(color.BLUE, power_shipB, shield_shipB, fueltank_shipB, battery_shipB)
+    shipA.main(ship1)
+    shipB.main(ship2)
 
     timer_id = pg.USEREVENT + 1
     pg.time.set_timer(timer_id, 1000)
     
     x1 = 1
     x2 = 18
+
+    def execute_action(screen, ship):
+        error = "Hubo un error"
+        if not ship.stack:
+            pass
+        try:
+            if ship.stack[0][0] == "move":
+                ship.spawn(screen, ship.stack[0][1], ship.stack[0][2])
+                ship.stack.pop(0)
+        except IndexError:
+            print(error)
+
     while True:
         
-        if ship1.get_spawn_state() == False and ship2.get_spawn_state() == False:
+        if not ship1.get_spawn_state() and not ship2.get_spawn_state():
             screen.fillColor(color.WHITE)
             space.exist(screen._screen)
             ship1.spawn(screen._screen, 0, 0)
@@ -177,11 +100,8 @@ def game():
             if event.type == timer_id:
                 screen.fillColor(color.WHITE)
                 space.exist(screen._screen)
-                
-                ship1.move((x1, 0))
-                ship2.move((x2, 19))
-                x1 += 1
-                x2 -= 1
+                execute_action(screen._screen, ship1)
+                execute_action(screen._screen, ship2)
                 
         pg.display.update()
         

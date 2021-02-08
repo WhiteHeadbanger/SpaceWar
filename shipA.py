@@ -2,6 +2,7 @@ import time
 import random
 from error_handling import OutOfEnergy, OutOfFuel
 
+"""
 def choose_movement(current_pos: tuple):
     posx, posy = current_pos
     directions = ["north", "east", "south", "west"]
@@ -67,7 +68,11 @@ def main(ship):
             except OutOfFuel:
                 pass
             time.sleep(1)
-            
+"""
+
+def main(ship):
+    for i in range(0, 19):
+        ship.move((i, 0))
 
 
     

@@ -68,6 +68,8 @@ class Entity:
 
 class Ship(pg.sprite.Sprite, Entity):
 
+    Queue = []
+
     def __init__(self, color, powerplant, shield, fuel_tank, battery):
         super().__init__()
         self.blocksize = 16
@@ -84,6 +86,7 @@ class Ship(pg.sprite.Sprite, Entity):
         self.battery = battery
         self.hp = 100
         self.spawned = False
+        self.stack = []
 
     def get_spawn_state(self):
         return self.spawned
@@ -129,11 +132,12 @@ class Ship(pg.sprite.Sprite, Entity):
     def move(self, target_pos: tuple):
         current_xpos, current_ypos = self.get_current_pos()
         target_xpos, target_ypos = target_pos
-        if abs(target_xpos - current_xpos) > 1 or abs(target_ypos - current_ypos) > 1:
-            raise MovementRangeExceeded()
-        if self.fuel < 1:
-            raise OutOfFuel()
-        self.spawn(config.SCREEN._screen, target_xpos, target_ypos)
+        #if abs(target_xpos - current_xpos) > 1 or abs(target_ypos - current_ypos) > 1:
+            #raise MovementRangeExceeded()
+        #if self.fuel < 1:
+            #raise OutOfFuel()
+        self.stack.append(("move", target_xpos, target_ypos, self))
+        #self.spawn(config.SCREEN._screen, target_xpos, target_ypos)
 
     def charge_energy(self):
         print("Charging energy resource. Stand-by for one turn")
@@ -255,7 +259,7 @@ class BlackHole(Entity):
         name = []
         name.append(random.choice(BlackHole.prefixes))
         name.append(random.choice(BlackHole.numbers))
-        return '-'.join(_name)
+        return '-'.join(name)
 
     """
     def create_gravity(self):
