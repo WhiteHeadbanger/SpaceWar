@@ -1,9 +1,3 @@
-"""
-ESTO VA A TIRAR ERROR CON LOS ULTIMOS CAMBIOS
-
-"""
-
-
 import time
 import random
 from error_handling import OutOfEnergy, OutOfFuel
