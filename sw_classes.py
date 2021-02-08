@@ -160,8 +160,23 @@ class Ship(pg.sprite.Sprite, Entity):
         self.energy -= 1
         return {"powerplant":target.powerplant, "shield":target.shield, "fuel tank":target.fuel_tank, "battery":target.battery}
     
+    def scan_ships(self):
+        #returns a list containing all the ships in space
+        
+        if self.energy < 1:
+            raise OutOfEnergy()
+        self.energy -= 1
+        ships = [x for x in Entity.listOfEntities if x.get_type() == "Ship"]
+        return ships
+    
     def boost_shield(self, value: bool):
         self.shield.boost = value
+    
+    def attack(self, target):
+        if self.energy < 2:
+            raise OutOfEnergy()
+        Space.stack.append(("attack", target, self))
+        self.energy -= 2
 
 
 
