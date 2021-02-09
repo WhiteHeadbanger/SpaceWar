@@ -31,7 +31,8 @@ class Entity:
 
     def __init__(self):
         self.name = ""
-        self.pos = 0
+        self.xpos = 0
+        self.ypos = 0
         self.type = ""
         self.hp = 0
 
@@ -44,7 +45,7 @@ class Entity:
         return self.name
 
     def get_current_pos(self):
-        return self.pos
+        return (self.xpos, self.ypos)
 
     def get_type(self):
         return self.type
@@ -52,26 +53,24 @@ class Entity:
     def get_hp(self):
         return self.hp
     
-    """
     def get_target_pos(self, target):
-        
         if isinstance(target, Entity):
-            x, y = target.get_current_pos()
-            return (x, y)
+            return target.get_current_pos()
 
-    
+    """
     def spawn(self):
         x = random.randint(0, 15)
         y = random.randint(0, 15)
         return (x, y)
     """
 
+
 class Ship(pg.sprite.Sprite, Entity):
 
     Queue = []
 
     def __init__(self, color, powerplant, shield, fuel_tank, battery):
-        super().__init__()
+        Entity.__init__(self)
         self.blocksize = 16
         self.xpos = 0
         self.ypos = 0
@@ -118,30 +117,34 @@ class Ship(pg.sprite.Sprite, Entity):
     def add_name(self, name: str):
         self.name = name
         
-    def spawn(self, screen, xpos, ypos):
-        self.xpos = xpos
-        self.ypos = ypos
-        for item in Space.SpaceMap:
-            if item[1] == xpos and item[2] == ypos:
-                xpos, ypos = item[3], item[4]
-        rect = pg.Rect(xpos+2, ypos+2, self.blocksize, self.blocksize)
-        pg.draw.rect(screen, self.color, rect)
-        if not self.spawned:
+    def spawn(self, screen, target_xpos, target_ypos):
+        if self.spawned:
+            if abs(target_xpos - self.xpos) > 1 or abs(target_ypos - self.ypos) > 1:
+                raise MovementRangeExceeded()
+            if self.fuel < 1:
+                raise OutOfFuel()
+            self.draw_self(screen, target_xpos, target_ypos)
+        else:
             self.spawned = True
+            self.draw_self(screen, target_xpos, target_ypos)
+
+    def draw_self(self, screen, target_xpos, target_ypos):
+        for item in Space.SpaceMap:
+            if item[1] == target_xpos and item[2] == target_ypos:
+                target_px_xpos, target_px_ypos = item[3], item[4]
+        rect = pg.Rect(target_px_xpos+2, target_px_ypos+2, self.blocksize, self.blocksize)
+        pg.draw.rect(screen, self.color, rect)
+        self.xpos = target_xpos
+        self.ypos = target_ypos
 
     def move(self, target_pos: tuple):
         current_xpos, current_ypos = self.get_current_pos()
         target_xpos, target_ypos = target_pos
-        #if abs(target_xpos - current_xpos) > 1 or abs(target_ypos - current_ypos) > 1:
-            #raise MovementRangeExceeded()
-        #if self.fuel < 1:
-            #raise OutOfFuel()
         self.stack.append(("move", target_xpos, target_ypos, self))
-        #self.spawn(config.SCREEN._screen, target_xpos, target_ypos)
 
     def charge_energy(self):
         print("Charging energy resource. Stand-by for one turn")
-        self.energy += 1
+        self.stack.append(("charge_energy"))
 
     def scan_all(self):
         #returns a list containing all the objects in space
@@ -175,7 +178,7 @@ class Ship(pg.sprite.Sprite, Entity):
     def attack(self, target):
         if self.energy < 2:
             raise OutOfEnergy()
-        Space.stack.append(("attack", target, self))
+        self.stack.append(("attack", target, self))
         self.energy -= 2
 
 

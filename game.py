@@ -32,18 +32,24 @@ def game():
     x1 = 1
     x2 = 18
 
+    error = False
+
     def execute_action(screen, ship):
-        error = "Hubo un error"
         if not ship.stack:
             pass
         try:
             if ship.stack[0][0] == "move":
                 ship.spawn(screen, ship.stack[0][1], ship.stack[0][2])
+                ship.energy -= 1
                 ship.stack.pop(0)
+            elif ship.stack[0][0] == "charge_energy":
+                ship.energy += 1
+            elif ship.stack[0][0] == "attack":
+                ship.stack[0][1].hp -= ship.stack[0][2].damage
         except IndexError:
-            print(error)
+            error = True
 
-    while True:
+    while not error:
         
         if not ship1.get_spawn_state() and not ship2.get_spawn_state():
             screen.fillColor(color.WHITE)
@@ -59,6 +65,26 @@ def game():
                 space.exist(screen._screen)
                 execute_action(screen._screen, ship1)
                 execute_action(screen._screen, ship2)
+                print(
+                    """
+                    {}
+                    --------
+                    HP: {}
+                    Energy: {}
+                    Fuel: {}
+
+                    {}
+                    --------
+                    HP: {}
+                    Energy: {}
+                    Fuel: {}
+                    """.format(
+                        ship1.get_name(), ship1.get_hp(), 
+                        ship1.get_energy(), ship1.get_fuel(), 
+                        ship2.get_name(), ship2.get_hp(), 
+                        ship2.get_energy(), ship2.get_fuel()
+                    )
+                )
                 
         pg.display.update()
         

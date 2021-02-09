@@ -76,6 +76,8 @@ def main(ship):
 
 def main(ship):
     x = 18
-    for i in range(0, 19):
+    for i in range(1, 18):
         ship.move((x, 19))
         x -= 1
+    for i in range(0, 19):
+        ship.move((19, i))
